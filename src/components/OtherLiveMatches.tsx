@@ -1,59 +1,87 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Carousel } from 'react-responsive-carousel';
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import CountryFlag from 'react-country-flag';
 import Link from 'next/link';
 
-// ডামি ডেটা
-const otherMatchesData = [
-    { id: 1, series: "Walton Series", teams: [{ name: "BAN", countryCode: "BD" }, { name: "PAK", countryCode: "PK" }], score: "156/7", isLive: true, type: "cricket", bgColor: "from-indigo-600 to-indigo-800" },
-    { id: 3, series: "Global Cup", teams: [{ name: "GER", countryCode: "DE" }, { name: "BRA", countryCode: "BR" }], score: "2-0", isLive: true, type: "football", bgColor: "from-green-600 to-green-800" },
-    { id: 2, series: "MMN Series", teams: [{ name: "NEP", countryCode: "NP" }, { name: "UAE", countryCode: "AE" }], score: "1-1", isLive: true, type: "cricket", bgColor: "from-purple-600 to-purple-800" },
-    { id: 4, series: "Asian Series", teams: [{ name: "SL", countryCode: "LK" }, { name: "IND", countryCode: "IN" }], score: "245/8", isLive: false, type: "cricket", bgColor: "from-pink-600 to-pink-800" },
-];
+const stringToGradient = (str: string) => {
+  if (!str) return 'from-gray-700 to-gray-800';
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const gradients = [
+    'from-blue-600 to-blue-800', 'from-green-600 to-green-800',
+    'from-purple-600 to-purple-800', 'from-pink-600 to-pink-800',
+    'from-indigo-600 to-indigo-800', 'from-teal-600 to-teal-800',
+  ];
+  const index = Math.abs(hash % gradients.length);
+  return gradients[index];
+};
 
-const OtherMatchCard = ({ match }: any) => (
-    <div className={`flex flex-col justify-between p-3 rounded-xl shadow-lg h-40 w-full bg-gradient-to-br ${match.bgColor}`}>
-        <div className="flex justify-between items-start">
-            <div>
-                <h3 className="text-white font-semibold text-sm">{match.series}</h3>
+const OtherMatchCard = ({ match }: any) => {
+    const cardGradient = stringToGradient(match.teamOne); // Use team name for color
+    return (
+        <div className={`flex flex-col justify-between p-3 rounded-xl shadow-lg h-36 w-full bg-gradient-to-br ${cardGradient}`}>
+            <div className="flex justify-between items-start">
+                <h3 className="text-white font-semibold text-sm">{match.sport}</h3>
+                {match.status === 'Live' && (
+                    <span className="flex items-center text-white text-xs font-bold bg-black/20 px-2 py-1 rounded-full">
+                        <span className="h-2 w-2 bg-red-500 rounded-full mr-1.5 animate-pulse"></span>
+                        LIVE
+                    </span>
+                )}
             </div>
-            {match.isLive && (
-                <span className="flex items-center text-white text-xs font-bold bg-black/20 px-2 py-1 rounded-full">
-                    <span className="h-2 w-2 bg-red-500 rounded-full mr-1.5 animate-pulse"></span>
-                    LIVE
-                </span>
-            )}
+            <div className="flex justify-between items-center">
+                <div className="flex flex-col items-center gap-1">
+                    {/* Assuming country code can be derived or is in DB */}
+                    <span className="text-white text-sm font-bold">{match.teamOne}</span>
+                </div>
+                <div className="flex flex-col items-center">
+                    <span className="text-white text-xl font-bold mb-1">{match.result || 'vs'}</span>
+                    <Link href="/live-tv" className="text-gray-200 hover:bg-white/20 text-xs font-semibold bg-white/10 px-3 py-1 rounded-full transition-colors">
+                        Watch
+                    </Link>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                    <span className="text-white text-sm font-bold">{match.teamTwo}</span>
+                </div>
+            </div>
         </div>
-        
-        <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-                <CountryFlag countryCode={match.teams[0].countryCode} svg style={{ width: '1.5em', height: '1.5em' }} />
-                <span className="text-white text-xl font-bold">{match.teams[0].name}</span>
-            </div>
-            <span className="text-white text-xl font-bold">{match.score}</span>
-            <div className="flex items-center gap-2">
-                <span className="text-white text-xl font-bold">{match.teams[1].name}</span>
-                <CountryFlag countryCode={match.teams[1].countryCode} svg style={{ width: '1.5em', height: '1.5em' }} />
-            </div>
-        </div>
-
-        {/* --- নতুন "Watch Live" বাটন --- */}
-        <Link href="/live-tv" className="mt-2 w-full bg-black/30 hover:bg-black/50 text-white text-xs text-center py-1.5 rounded-lg font-medium transition-colors">
-            Watch Live
-        </Link>
-        {/* --------------------------------- */}
-    </div>
-);
+    );
+};
 
 const OtherLiveMatches = () => {
+    const [matches, setMatches] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [activeFilter, setActiveFilter] = useState('all');
 
-    const filteredMatches = otherMatchesData.filter(match => {
+    useEffect(() => {
+        const fetchMatches = async () => {
+            setLoading(true);
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+            try {
+                // Fetching only 'Live' matches for this component
+                const res = await fetch(`${apiUrl}/api/matches?filter=live`);
+                const data = await res.json();
+                setMatches(data);
+            } catch (error) {
+                console.error("Failed to fetch other live matches:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchMatches();
+    }, []);
+
+    const filteredMatches = matches.filter((match: any) => {
         if (activeFilter === 'all') return true;
-        return match.type === activeFilter;
+        return match.sport.toLowerCase() === activeFilter;
     });
+
+    if (loading) return <div className="my-8"><p className="text-gray-400">Loading Other Matches...</p></div>;
+    if (matches.length === 0) return null;
 
     return (
         <div className="my-8">
@@ -73,12 +101,12 @@ const OtherLiveMatches = () => {
                     showIndicators={false}
                     infiniteLoop={true}
                     centerMode={true}
-                    centerSlidePercentage={70}
+                    centerSlidePercentage={65}
                     emulateTouch={true}
                     showArrows={false}
                 >
                     {filteredMatches.map(match => (
-                        <div key={match.id} className="px-1.5">
+                        <div key={(match as any)._id} className="px-1.5">
                             <OtherMatchCard match={match} />
                         </div>
                     ))}

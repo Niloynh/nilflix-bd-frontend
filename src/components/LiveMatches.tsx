@@ -43,7 +43,7 @@ const LiveMatches = () => {
             }
         };
         fetchMatches();
-    }, []);
+    }, []); // This runs once when the component loads
 
     if (loading) return <p className="text-gray-400 my-6">Loading Live Matches...</p>;
 
@@ -57,10 +57,22 @@ const LiveMatches = () => {
                 <h2 className="text-lg font-semibold text-white">Live Matches</h2>
                 <Link href="/live-tv" className="text-xs text-red-500 hover:underline">See All</Link>
             </div>
+            
             <div className="flex space-x-3 mb-3">
-                <button onClick={() => setActiveSport('football')} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeSport === 'football' ? 'bg-red-600 text-white' : 'bg-gray-700 text-gray-300'}`}>Football</button>
-                <button onClick={() => setActiveSport('cricket')} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeSport === 'cricket' ? 'bg-red-600 text-white' : 'bg-gray-700 text-gray-300'}`}>Cricket</button>
+                <button 
+                    onClick={() => setActiveSport('football')}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeSport === 'football' ? 'bg-red-600 text-white' : 'bg-gray-700 text-gray-300'}`}
+                >
+                    Football
+                </button>
+                <button 
+                    onClick={() => setActiveSport('cricket')}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeSport === 'cricket' ? 'bg-red-600 text-white' : 'bg-gray-700 text-gray-300'}`}
+                >
+                    Cricket
+                </button>
             </div>
+            
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
                 {filteredMatches.length > 0 ? (
                     filteredMatches.map(match => (
