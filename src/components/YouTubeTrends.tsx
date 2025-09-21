@@ -2,11 +2,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import YouTube from "react-youtube";
+import { Video } from '@/types'; // <-- আপনার কাস্টম টাইপ ইমপোর্ট করুন
 
 // Helper functions
-const formatViews = (views: string) => {
+const formatViews = (views?: string) => { // <-- views-কে অপশনাল করা হয়েছে
   if (!views) return "0 views";
   const num = parseInt(views, 10);
+  if (isNaN(num)) return "0 views";
   if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M views`;
   if (num >= 1000) return `${(num / 1000).toFixed(0)}K views`;
   return `${num} views`;
@@ -26,28 +28,22 @@ const timeAgo = (date: string) => {
   return `${Math.floor(seconds)} seconds ago`;
 };
 
-const stringToColor = (str: string) => {
+const stringToColor = (str?: string) => { // <-- str-কে অপশনাল করা হয়েছে
   if (!str) return "bg-gray-500";
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
   }
   const colors = [
-    "bg-red-500",
-    "bg-blue-500",
-    "bg-green-500",
-    "bg-yellow-500",
-    "bg-indigo-500",
-    "bg-purple-500",
-    "bg-pink-500",
-    "bg-teal-500",
+    "bg-red-500", "bg-blue-500", "bg-green-500", "bg-yellow-500",
+    "bg-indigo-500", "bg-purple-500", "bg-pink-500", "bg-teal-500",
   ];
   const index = Math.abs(hash % colors.length);
   return colors[index];
 };
 
 export default function YouTubeTrends() {
-  const [videos, setVideos] = useState<any[]>([]);
+  const [videos, setVideos] = useState<Video[]>([]); // <-- any[] এর পরিবর্তে Video[] ব্যবহার করা হয়েছে
   const [loading, setLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
@@ -83,7 +79,7 @@ export default function YouTubeTrends() {
       </div>
 
       <div className="space-y-6">
-        {videos.map((video: any) => {
+        {videos.map((video: Video) => { // <-- any এর পরিবর্তে Video টাইপ ব্যবহার করা হয়েছে
           const avatarColor = stringToColor(video.channelTitle);
 
           return (

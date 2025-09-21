@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import YouTube from "react-youtube";
+import { Video } from '@/types'; // আপনার কাস্টম টাইপ ইমপোর্ট করুন
 
 type VideoFeedProps = {
   source: string;
@@ -9,9 +10,9 @@ type VideoFeedProps = {
 };
 
 export default function VideoFeed({ source, category }: VideoFeedProps) {
-  const [videos, setVideos] = useState<any[]>([]);
+  const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeVideo, setActiveVideo] = useState<string | null>(null); // active video id
+  const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
@@ -35,16 +36,17 @@ export default function VideoFeed({ source, category }: VideoFeedProps) {
         console.error("Failed to fetch videos:", err);
         setLoading(false);
       });
-  }, [source, category]);
+  }, [source, category, apiUrl]); // <-- সমাধান: apiUrl এখানে যোগ করা হয়েছে
 
   if (loading)
     return <p className="text-gray-400 text-center py-10">Loading videos...</p>;
   if (videos.length === 0)
     return <p className="text-gray-400 text-center py-10">No videos found.</p>;
 
-  const formatViews = (views: string) => {
+  const formatViews = (views?: string) => { // <-- views-কে অপশনাল করা হয়েছে
     if (!views) return "0 views";
     const num = parseInt(views, 10);
+    if (isNaN(num)) return "0 views"; // <-- NaN চেক যোগ করা হয়েছে
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M views`;
     if (num >= 1000) return `${(num / 1000).toFixed(0)}K views`;
     return `${num} views`;
@@ -88,12 +90,9 @@ export default function VideoFeed({ source, category }: VideoFeedProps) {
             </div>
 
             <div className="flex-1">
-              {/* Video Title */}
               <h4 className="text-white font-semibold line-clamp-2">
                 {video.title}
               </h4>
-
-              {/* Channel name + subscriber (just name) and Views */}
               <p className="text-gray-400 text-sm">
                 {video.channelTitle} • {formatViews(video.sourceStats?.views)}
               </p>

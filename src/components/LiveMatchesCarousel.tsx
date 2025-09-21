@@ -5,6 +5,7 @@ import { Carousel } from 'react-responsive-carousel';
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import ReactCountryFlag from 'react-country-flag';
 import { IoVideocam } from 'react-icons/io5';
+import { Match } from '@/types';
 
 // দেশের নাম থেকে কান্ট্রি কোড এবং শর্ট ফর্ম পাওয়ার জন্য Helper ফাংশন
 const teamDetails: { [key: string]: { code: string; short: string } } = {
@@ -87,7 +88,7 @@ const MatchCard = ({ match }: any) => {
 
 
 export default function LiveMatchesCarousel() {
-    const [liveMatches, setLiveMatches] = useState([]);
+    const [liveMatches, setLiveMatches] =  useState<Match[]>([]);;
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {

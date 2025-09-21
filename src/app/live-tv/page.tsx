@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import ReactCountryFlag from 'react-country-flag'; // <-- এই লাইনটি যোগ করুন
 import { IoVideocamOutline } from "react-icons/io5";
 import LiveBettingInterface from '@/components/LiveBettingInterface';
+import { Match } from '@/types';
 
 const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
 
@@ -69,7 +70,7 @@ function LiveTvContent() {
     const searchParams = useSearchParams();
     const playUrlFromQuery = searchParams.get('play');
 
-    const [matches, setMatches] = useState([]);
+    const [matches, setMatches] =  useState<Match[]>([]);;
     const [loading, setLoading] = useState(true);
     const [nowPlaying, setNowPlaying] = useState<any | null>(null);
     
