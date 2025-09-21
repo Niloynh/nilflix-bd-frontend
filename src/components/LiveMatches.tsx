@@ -1,89 +1,75 @@
 "use client";
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { Carousel } from 'react-responsive-carousel';
+import "react-responsive-carousel/lib/styles/carousel.min.css"; // ক্যারোসেলের জন্য CSS
 
+// কার্ডের উচ্চতা কমানো হয়েছে এবং ডিজাইন আপডেট করা হয়েছে
 const MatchCard = ({ match }: any) => (
-    <Link href={`/live-tv?match=${match._id}`} className="block bg-gray-800/50 border border-gray-700 rounded-lg p-2 text-center flex flex-col justify-between h-28 hover:border-red-500 transition-colors">
-        <div className="flex items-center justify-between">
-            <span className={`text-white text-[10px] font-bold px-1.5 py-0.5 rounded ${match.status === 'Live' ? 'bg-red-600' : 'bg-blue-600'}`}>
-                {match.status}
+    <div className="bg-gray-800 p-3 rounded-xl shadow-lg h-32 flex flex-col justify-between">
+        <div className="flex justify-between items-start">
+            <h3 className="text-white font-semibold text-sm text-left line-clamp-2">{match.teamOne} vs {match.teamTwo}</h3>
+            <span className="flex-shrink-0 flex items-center text-white text-xs font-bold bg-red-600 px-2 py-1 rounded-full">
+                <span className="h-2 w-2 bg-white rounded-full mr-1.5 animate-ping"></span>
+                LIVE
             </span>
-            <span className="text-gray-400 text-xs">{new Date(match.matchTime).toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'})}</span>
         </div>
-        <div className="flex items-center justify-around text-white font-semibold text-sm">
-            <span>{match.teamOne}</span>
-            <div className="flex flex-col items-center gap-1">
-                <span className="text-lg font-bold">vs</span>
-            </div>
-            <span>{match.teamTwo}</span>
-        </div>
-        <div className="text-gray-400 text-xs truncate">
-            {match.sport}
-        </div>
-    </Link>
+        <Link 
+            href={`/live-tv?play=${encodeURIComponent(match.streamUrl)}`}
+            className="mt-2 w-full bg-red-600/80 hover:bg-red-600 text-white text-sm text-center py-2 rounded-lg font-semibold transition-colors"
+        >
+            Watch Now
+        </Link>
+    </div>
 );
 
-const LiveMatches = () => {
-    const [matches, setMatches] = useState([]);
+export default function LiveMatches() {
+    const [liveMatches, setLiveMatches] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeSport, setActiveSport] = useState('football');
 
     useEffect(() => {
-        const fetchMatches = async () => {
-            setLoading(true);
+        const fetchLiveMatches = async () => {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
             try {
-                const res = await fetch(`${apiUrl}/api/matches`);
+                // শুধুমাত্র লাইভ ম্যাচ আনা হচ্ছে
+                const res = await fetch(`${apiUrl}/api/matches?filter=live`);
                 const data = await res.json();
-                setMatches(data);
+                setLiveMatches(data);
             } catch (error) {
-                console.error("Failed to fetch matches:", error);
+                console.error("Failed to fetch live matches:", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchMatches();
-    }, []); // This runs once when the component loads
+        fetchLiveMatches();
+    }, []);
 
-    if (loading) return <p className="text-gray-400 my-6">Loading Live Matches...</p>;
-
-    const filteredMatches = matches.filter((match: any) => 
-        match.sport.toLowerCase() === activeSport
-    );
+    if (loading || liveMatches.length === 0) return null;
 
     return (
-        <div className="my-6">
-            <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-semibold text-white">Live Matches</h2>
+        <div className="my-8">
+            <div className="flex items-center justify-between mb-4">
+                
+                <h2 className="text-xl font-bold text-white mb-4">🚩Live Matches</h2>
                 <Link href="/live-tv" className="text-xs text-red-500 hover:underline">See All</Link>
             </div>
-            
-            <div className="flex space-x-3 mb-3">
-                <button 
-                    onClick={() => setActiveSport('football')}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeSport === 'football' ? 'bg-red-600 text-white' : 'bg-gray-700 text-gray-300'}`}
-                >
-                    Football
-                </button>
-                <button 
-                    onClick={() => setActiveSport('cricket')}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeSport === 'cricket' ? 'bg-red-600 text-white' : 'bg-gray-700 text-gray-300'}`}
-                >
-                    Cricket
-                </button>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
-                {filteredMatches.length > 0 ? (
-                    filteredMatches.map(match => (
-                        <MatchCard key={(match as any)._id} match={match} />
-                    ))
-                ) : (
-                    <p className="text-gray-400 col-span-full text-center py-4">No {activeSport} matches found.</p>
-                )}
-            </div>
+            <Carousel
+                showThumbs={false}
+                showIndicators={false}
+                infiniteLoop={true}
+                autoPlay={true}       // <-- অটো স্ক্রল চালু করা হলো
+                interval={5000}       // <-- প্রতি ৫ সেকেন্ড পর পর স্লাইড পরিবর্তন হবে
+                centerMode={true}
+                centerSlidePercentage={70} // স্ক্রিনে কতটুকু অংশ দেখাবে
+                emulateTouch={true}   // <-- মোবাইল ডিভাইসে সোয়াইপ সাপোর্ট
+                showArrows={false}
+            >
+                {liveMatches.map((match: any) => (
+                    <div key={match._id} className="px-1.5">
+                        <MatchCard match={match} />
+                    </div>
+                ))}
+            </Carousel>
         </div>
     );
-};
-
-export default LiveMatches;
+}

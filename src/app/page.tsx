@@ -1,8 +1,7 @@
 "use client";
 import { useState } from 'react';
 import Header from '@/components/Header';
-import LiveMatches from '@/components/LiveMatches';
-import OtherLiveMatches from '@/components/OtherLiveMatches';
+import LiveMatchesCarousel from '@/components/LiveMatchesCarousel';
 import YouTubeTrends from '@/components/YouTubeTrends';
 import TikTokReels from '@/components/TikTokReels';
 import VideoFeed from '@/components/VideoFeed';
@@ -17,41 +16,30 @@ export default function Home() {
     return (
         <div>
             <Header activeTab={activeTab} setActiveTab={setActiveTab} />
-            
             <div className="container mx-auto px-4 pb-20">
                 {activeTab === 'Home' && (
                     <>
-                        {/* --- Live Match sections have been added back --- */}
-                        <LiveMatches />
-                        <OtherLiveMatches />
+                        <LiveMatchesCarousel />
                         <YouTubeShortsGrid />
                         <YouTubeTrends />
-                        {/* ------------------------------------------------ */}
+                        <TikTokReels />
                     </>
                 )}
-                
                 {activeTab === 'YouTube' && (
                     <>
                         <CategoryFilters 
                             activeCategory={activeCategory} 
                             setActiveCategory={setActiveCategory} 
                         />
-                        <YouTubeShortsGrid />
-                        <VideoFeed 
-                            source="YouTube" 
-                            category={activeCategory}
-                        />
+                        <VideoFeed source="YouTube" category={activeCategory} />
                     </>
                 )}
-
                 {activeTab === 'TikTok' && (
                     <>
-                        <TikTokReels /> 
                         <VideoFeed source="TikTok" category="All" />
                     </>
                 )}
             </div>
-            
             <BottomNav />
         </div>
     );
